@@ -1,6 +1,6 @@
 # group
 ----
-## ASE class
+## ASE class project
 
 ### Install libraries
 ```
@@ -15,4 +15,5 @@ python run.py
 ### Build database
 ```
 python db_create.py
-``
+```
+notes of classes will updated in wiki.
