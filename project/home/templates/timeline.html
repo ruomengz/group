@@ -33,7 +33,7 @@
       <div class="twitbox">
         <h3>What's on your mind?</h3>
         <form action="{{ url_for('home.add_message') }}" method="post">
-          <p><input type="text" name="text" size="60"><!--
+          <p><input type="text" name="text" size="50"><!--
           --><input type="submit" value="Share">
         </form>
       </div>
@@ -41,13 +41,27 @@
   {% endif %}
   <ul class="messages">
   {% for message in messages %}
-    <li><img src="{{ message.author.email|gravatar(size=48) }}"><p>
-      <strong><a href="{{ url_for('home.user_timeline', username=message.author.username)
-      }}">{{ message.author.username }}</a></strong>
-      {{ message.description }}
-      <small>&mdash; {{ message.pub_date.strftime('%Y-%m-%d %H:%M') }}</small>
+    <table class="table">
+    <tr>
+      <th>
+        <table>
+        <tr>
+          <td><img src="{{ message.author.email|gravatar(size=48) }}"></td> 
+        </tr>
+          <td><strong><a href="{{ url_for('home.user_timeline', username=message.author.username)
+          }}">{{ message.author.username }}</a></strong></td>
+          
+        <tr>
+        </table>
+      </th>
+      <th rowspan="1">{{ message.description }}
+          <small>&mdash; {{ message.pub_date.strftime('%Y-%m-%d %H:%M') }}</small></th>        
+    </tr>  
+      
+
   {% else %}
-    <li><em>There's no message so far.</em>
+    <li><em>There's no message so far.</em></li>
   {% endfor %}
+    </table>
   </ul>
 {% endblock %}

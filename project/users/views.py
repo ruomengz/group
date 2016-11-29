@@ -5,7 +5,7 @@ from flask import Flask, request, session, url_for, redirect, \
 from hashlib import md5
 from werkzeug import check_password_hash, generate_password_hash
 from functools import wraps
-
+from flask_bootstrap import Bootstrap
 from project.models import User
 from project import app, db
 
@@ -24,7 +24,7 @@ def login_required(f):
             return f(*args, **kwargs)
         else:
             flash('You need to login first.')
-            return redirect(url_for('login'))
+            return redirect(url_for('users.login'))
     return wrap
 
 @users_blueprint.before_request
@@ -40,7 +40,7 @@ def login():
         return redirect(url_for('home.timeline'))
     error = None
     if request.method == 'POST':
-        user = User.query.filter_by(username=request.form['username']).first()
+        user = db.session.query(User).filter_by(username=request.form['username']).first()
         if user is None:
             error = 'Invalid username'
         elif not check_password_hash(user.pw_hash, request.form['password']):
@@ -52,7 +52,6 @@ def login():
     return render_template('login.html', error=error)
 
 @users_blueprint.route('/logout')
-@login_required
 def logout():
     """Logs the user out."""
     flash('You were logged out')
@@ -75,7 +74,7 @@ def register():
             error = 'You have to enter a password'
         elif request.form['password'] != request.form['password2']:
             error = 'The two passwords do not match'
-        elif User.query.filter_by(username=request.form['username']).first() is not None:
+        elif db.session.query(User).filter_by(username=request.form['username']).first() is not None:
             error = 'The username is already taken'
         else:
             user = User(request.form['username'], request.form['email'], generate_password_hash(request.form['password']))

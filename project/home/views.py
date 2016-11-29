@@ -1,8 +1,8 @@
 # imports
 from datetime import datetime
 from flask import Flask, request, session, url_for, redirect, \
-     render_template, abort, g, flash, _app_ctx_stack, Response, Blueprint
-
+     render_template, abort, g, flash, _app_ctx_stack,make_response, Response, Blueprint
+from flask_bootstrap import Bootstrap
 from project import db
 from project.models import *
 
@@ -38,17 +38,19 @@ def timeline():
     redirect to the public timeline.  This timeline shows the user's
     messages as well as all the messages of followed users.
     """
+    if 'user_id' not in session:
+        return render_template('/login.html', error="please login first")
     if not g.user:
         return redirect(url_for('home.public_timeline'))
     messages = db.session.query(Message).filter_by(author_id=session['user_id']).order_by(Message.pub_date.desc()).limit(30).all()
-    return render_template('timeline.html', messages=messages)
-
+    resp=make_response(render_template('timeline.html', messages=messages))
+    resp.headers.add('Cache-Control','no-store,no-cache,must-revalidate,post-check=0,pre-check=0')
+    return resp
 
 @home_blueprint.route('/public')
 def public_timeline():
     """Displays the latest messages of all users."""
     messages = db.session.query(Message).order_by(Message.pub_date.desc()).limit(30).all()
-    print messages
     return render_template('timeline.html', messages=messages)
 
 
@@ -69,9 +71,13 @@ def add_message():
 
 @home_blueprint.route('/<username>')
 def user_timeline(username):
+    if 'user_id' not in session:
+        return render_template('/login.html', error="please login first")
     """Display's a users tweets."""
     profile_user = db.session.query(User).filter_by(username=username).first()
     if profile_user is None:
         abort(404)
     messages = db.session.query(Message).filter_by(author_id=profile_user.id).order_by(Message.pub_date.desc()).limit(30).all()
-    return render_template('timeline.html', messages=messages, profile_user=profile_user)
+    resp=make_response(render_template('timeline.html', messages=messages, profile_user=profile_user))
+    resp.headers.add('Cache-Control','no-store,no-cache,must-revalidate,post-check=0,pre-check=0')
+    return resp
